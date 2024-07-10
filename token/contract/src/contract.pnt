@@ -1,0 +1,61 @@
+storage {
+    // The balances of accounts
+    balances: (b256 => int),
+
+    // The nonce for each account
+    nonce: (b256 => int),
+
+    // The sha256 of the name of the token
+    token_name: b256,
+
+    // The sha256 of the symbol of the token
+    token_symbol: b256,
+
+    // The "decimals" of the token
+    decimals: int,
+}
+
+const MINTER = 0x1ECBB0067FC057261A6B199A0F121B5CD653B93DE9195CA5F836CE0D4D2A6E21;
+
+type Secp256k1Signature = { b256, b256, int };
+
+predicate Mint {
+    var to: b256;
+    var amount: int;
+    var signature: Secp256k1Signature;
+
+    state balance = storage::balances[to];
+
+    constraint to == MINTER;
+    
+    if balance == nil {
+        constraint balance' == amount;
+    } else {
+        constraint balance' == balance + amount;
+    }
+
+    constraint __sha256(__recover_secp256k1(__sha256({ to , amount }), signature)) == to;
+}
+
+predicate Transfer {
+    var from: b256;
+    var to: b256;
+    var amount: int;
+    var signature: Secp256k1Signature;
+
+    state from_balance = storage::balances[from];
+    state to_balance = storage::balances[to];
+
+    constraint amount > 0;
+    
+    constraint from_balance >= amount;
+    constraint from_balance - from_balance' == amount;
+
+    if to_balance == nil {
+        constraint to_balance' == amount;
+    } else {
+        constraint to_balance' == to_balance + amount;
+    }
+
+    constraint __sha256(__recover_secp256k1(__sha256({ from, to , amount }), signature)) == from;
+}

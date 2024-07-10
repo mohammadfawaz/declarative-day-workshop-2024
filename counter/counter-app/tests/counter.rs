@@ -15,7 +15,7 @@ async fn test_counter() {
 
     // This is the address of the `Increment` predicate, which contans the address (hash) of the
     // predicate itself as well as the address (hash) of the counter contract.
-    let predicate_address = PredicateAddress {
+    let increment_predicate_address = PredicateAddress {
         contract: essential_hash::contract_addr::from_contract(&counter_contract),
         predicate: essential_hash::content_addr(&counter_contract.predicates[0]),
     };
@@ -37,7 +37,7 @@ async fn test_counter() {
     .unwrap();
 
     // This is a new instance of the counter app
-    let app = App::new(server_address, predicate_address).unwrap();
+    let app = App::new(server_address, increment_predicate_address).unwrap();
 
     // Ensure that the counter starts at 0
     assert_eq!(app.read_current_counter().await.unwrap(), 0);

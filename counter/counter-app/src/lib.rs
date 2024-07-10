@@ -5,6 +5,8 @@ use essential_types::{
     PredicateAddress, Word,
 };
 
+pint_abi::gen_from_file!("../contract/out/debug/counter-abi.json");
+
 pub struct App {
     client: EssentialClient,
     predicate_address: PredicateAddress,
@@ -31,12 +33,13 @@ impl App {
     /// Queries the state of the client for the current value of the counter, given the address of
     /// the contract that owns the counter and its storage key.
     pub async fn read_current_counter(&self) -> anyhow::Result<Word> {
+        // Find the actualy storage key using the ABI
+        let mut mutations: Vec<Mutation> = storage::mutations().counter(Default::default()).into();
+        let key = mutations.pop().unwrap().key;
+
         let counter_value = self
             .client
-            .query_state(
-                &self.predicate_address.contract,
-                &Self::COUNTER_STORAGE_KEY.to_vec(),
-            )
+            .query_state(&self.predicate_address.contract, &key)
             .await?;
 
         Ok(match &counter_value[..] {
@@ -63,10 +66,7 @@ pub fn create_solution(predicate_address: PredicateAddress, new_count: Word) -> 
             predicate_to_solve: predicate_address,
             decision_variables: Default::default(),
             transient_data: Default::default(),
-            state_mutations: vec![Mutation {
-                key: App::COUNTER_STORAGE_KEY.to_vec(),
-                value: vec![new_count],
-            }],
+            state_mutations: storage::mutations().counter(new_count).into(),
         }],
     }
 }
