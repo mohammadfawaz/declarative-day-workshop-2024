@@ -1,0 +1,13 @@
+storage {
+    counter: int,
+}
+
+predicate Increment {
+    state counter: int = storage::counter;
+
+    if counter == nil {
+        constraint counter' == 1;
+    } else {
+        constraint counter' == counter + 1;
+    }
+}

@@ -1,0 +1,18 @@
+[package]
+name = "counter-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+clap = "4.5.9"
+essential-app-utils = "0.1.0"
+essential-deploy-contract = "0.1.0"
+essential-hash = "0.1.0"
+essential-rest-client = "0.1.0"
+essential-types = "0.1.0"
+tokio = { version = "1.38.0", features = ["full"] }
+
+[dev-dependencies]
+essential-app-utils = { version = "0.1.0", features = ["test-utils"] }
+essential-wallet = { version = "0.1.0", features = ["test-utils"] }
