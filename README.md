@@ -11,3 +11,4 @@
 1. [Quickstart guide](https://essential-contributions.github.io/essential-integration/index.html)
 1. [The Book of Pint](https://essential-contributions.github.io/pint/book/)
 1. [The Essential Specs](https://essential-contributions.github.io/specs/specs/index.html?ref=blog.essential.builders)
+1. [More Essential Apps](https://github.com/essential-contributions/essential-integration)
