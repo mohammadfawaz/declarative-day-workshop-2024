@@ -128,7 +128,7 @@ impl App {
     pub async fn balance(&mut self, account_name: &str) -> anyhow::Result<Word> {
         let account_key = self.get_hashed_key(account_name)?;
 
-        // Find the actualy storage key using the ABI
+        // Find the actual storage key using the ABI
         let mut mutations: Vec<Mutation> = storage::mutations()
             .balances(|map| map.entry(account_key, Default::default()))
             .into();

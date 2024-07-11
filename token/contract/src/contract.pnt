@@ -1,61 +1,79 @@
 storage {
-    // The balances of accounts
+    // A map from account (addresses) to token balances 
     balances: (b256 => int),
-
-    // The nonce for each account
-    nonce: (b256 => int),
-
-    // The sha256 of the name of the token
-    token_name: b256,
-
-    // The sha256 of the symbol of the token
-    token_symbol: b256,
-
-    // The "decimals" of the token
-    decimals: int,
 }
 
+// This is the address of the account that is allow to mint
 const MINTER = 0x1ECBB0067FC057261A6B199A0F121B5CD653B93DE9195CA5F836CE0D4D2A6E21;
 
 type Secp256k1Signature = { b256, b256, int };
 
 predicate Mint {
+    // Address to mint to
     var to: b256;
+
+    // Amount of tokens to mint
     var amount: int;
+
+    // Signature over `to` and `amount`
     var signature: Secp256k1Signature;
 
+    // Read the current balance of `to`
     state balance = storage::balances[to];
 
+    // The receiver must also be the minter
     constraint to == MINTER;
-    
+
     if balance == nil {
+        // If the balance of `to` hasn't been set before, then set it to `amount`
         constraint balance' == amount;
     } else {
+        // Otherwise, increment it by `amount`
         constraint balance' == balance + amount;
     }
 
-    constraint __sha256(__recover_secp256k1(__sha256({ to , amount }), signature)) == to;
+    // Now, validate the signature 
+    constraint @validate_signature(signature; to; { to, amount });
 }
 
 predicate Transfer {
+    // Address of the token sender
     var from: b256;
+
+    // Address to transfer the tokens to
     var to: b256;
+
+    // Amount of tokens to transfer 
     var amount: int;
+    
+    // Signature over `from`, `to`, and `amount`
     var signature: Secp256k1Signature;
 
+    // Read the current balances of `from` and `to`
     state from_balance = storage::balances[from];
     state to_balance = storage::balances[to];
 
-    constraint amount > 0;
-    
+    // Ensure the amount to transfer is at least 1
+    constraint amount >= 1;
+
+    // Also ensure that `from` has enough tokens to transfer 
     constraint from_balance >= amount;
+
+    // Now, decrement the balance of `from` by `amount`
     constraint from_balance - from_balance' == amount;
 
     if to_balance == nil {
+        // If the balance of `to` hasn't been set before, then set it to `amount`
         constraint to_balance' == amount;
     } else {
+        // Otherwise, increment it by `amount`
         constraint to_balance' == to_balance + amount;
     }
 
-    constraint __sha256(__recover_secp256k1(__sha256({ from, to , amount }), signature)) == from;
+    // Now, validate the signature 
+    constraint @validate_signature(signature; from; { from, to, amount });
+}
+
+macro @validate_signature($signature, $key, $data) {
+    __sha256(__recover_secp256k1(__sha256($data), $signature)) == $key
 }

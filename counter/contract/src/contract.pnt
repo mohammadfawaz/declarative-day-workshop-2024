@@ -3,11 +3,14 @@ storage {
 }
 
 predicate Increment {
+    // Read the current value of the counter
     state counter: int = storage::counter;
 
     if counter == nil {
+        // If the counter hasn't been set before, set it to 1
         constraint counter' == 1;
     } else {
+        // If the counter has been set before, then increment it by 1
         constraint counter' == counter + 1;
     }
 }
